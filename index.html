@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kasir Sewa PS</title>
+    <style>
+        :root {
+            --ps-blue: #003791;
+            --ps-dark: #121212;
+            --text-light: #ffffff;
+            --card-bg: #1e1e1e;
+            --danger: #e63946;
+            --success: #2a9d8f;
+            --warning: #f4a261;
+            --border-color: #333;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--ps-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 15px;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        .header-logo-container {
+            display: flex;
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+        
+        .header-logo {
+            max-width: 250px; 
+            width: 80%;       
+            height: auto;
+            mix-blend-mode: screen; 
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3)); 
+            z-index: 1;
+        }
+
+        .header-title-kasir {
+            color: #ffd700; 
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 8px; 
+            margin-top: -15px; 
+            margin-left: 8px; 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8); 
+            z-index: 2;
+        }
+        
+        h3 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 25px;
+            font-size: 1.1rem;
+        }
+        
+        .container {
+            max-width: 600px; 
+            margin: auto;
+            width: 100%;
+        }
+        
+        .form-group, .rental-card, .customer-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #bbb;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px 10px; 
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-size: 15px; 
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #d4af37; 
+        }
+        
+        input, select {
+            background-color: #2c2c2c;
+            color: white;
+            color-scheme: dark; 
+        }
+        
+        select option:disabled {
+            color: var(--danger);
+            font-style: italic;
+        }
+        
+        .datetime-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: column; 
+        }
+        .datetime-group div { width: 100%; }
+        
+        button {
+            background-color: #3b2c00; 
+            border: 1px solid #755a00;
+            color: #ffd700;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        button:hover { background-color: #5c4400; }
+        button:active { transform: scale(0.98); }
+        
+        .btn-stop { background-color: var(--danger); border-color: #a02530; color: white; margin-bottom: 0; }
+        .btn-stop:hover { background-color: #c92a37; }
+        .btn-export { background-color: var(--success); border-color: #1e7066; color: white; margin-bottom: 0; }
+        .btn-export:hover { background-color: #21867a; }
+        .btn-clear { background-color: #555; border-color: #444; color: white; margin-bottom: 0; }
+        .btn-add-customer { background-color: #2c1a3b; border-color: #4a2180; color: #d4a5ff; margin-top: 5px; }
+        .btn-add-customer:hover { background-color: #3f2554; }
+        
+        .btn-delete-rental {
+            background-color: transparent;
+            border: 1px solid #555;
+            color: #aaa;
+            padding: 8px;
+            font-size: 12px;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+        .btn-delete-rental:hover {
+            background-color: #333;
+            color: white;
+            border-color: #888;
+        }
+
+        .button-row {
+            display: flex;
+            flex-direction: column; 
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .searchable-dropdown { position: relative; width: 100%; }
+        .dropdown-list {
+            position: absolute;
+            top: 100%; left: 0; right: 0;
+            background-color: #2c2c2c;
+            border: 1px solid #555;
+            border-radius: 0 0 8px 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 999;
+            display: none; 
+            margin-top: -14px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        }
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            color: white;
+            font-size: 14px;
+        }
+        .dropdown-item:active { background-color: #5c4400; } 
+        
+        .rental-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .badge {
+            background: #d4af37; 
+            color: #121212;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap; 
+        }
+
+        .badge-order-count {
+            background: #2a9d8f;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .customer-stats {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #444;
+            font-size: 12px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+        .customer-stats .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .customer-stats .total-money {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        .badge-late {
+            display: block;
+            background-color: var(--danger);
+            color: white;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 12px 0;
+            animation: blink 1.5s infinite; 
+        }
+        @keyframes blink { 50% { opacity: 0.7; } }
+
+        .time-details {
+            background-color: #222;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0 15px 0;
+            font-size: 13px;
+            color: #ddd;
+            line-height: 1.6;
+            border: 1px solid #333;
+        }
+
+        .btn-edit-waktu {
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 5px;
+            display: inline-block;
+            width: auto;
+            margin-bottom: 0;
+        }
+        .btn-edit-waktu:hover { background-color: #555; }
+        
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; 
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px; 
+            min-width: 320px; 
+        }
+        
+        th, td {
+            border: 1px solid #444;
+            padding: 10px 8px;
+            text-align: left;
+            vertical-align: top; 
+        }
+        
+        th {
+            background-color: #222;
+            color: #ddd;
+            white-space: nowrap;
+        }
+        
+        .keuangan-info {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed #444;
+        }
+        
+        .summary-box {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #333;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #bbb;
+        }
+        .summary-row.tagihan { color: white; font-weight: bold; }
+        .summary-row.piutang { color: var(--danger); }
+        .summary-row.diskon { color: var(--success); }
+        .summary-row.real {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffd700; 
+            border-top: 1px dashed #555;
+            padding-top: 10px;
+            margin-top: 8px;
+        }
+        .text-diskon { color: var(--success); font-weight: bold; }
+        
+        .tab-nav {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+        .tab-nav button {
+            flex: 1;
+            margin: 0;
+            border-radius: 0;
+            background-color: #1a1a1a;
+            color: #aaa;
+            border: none;
+            border-right: 1px solid #444;
+            font-size: 14px;
+            padding: 12px;
+        }
+        .tab-nav button:last-child { border-right: none; }
+        .tab-nav button.active {
+            background-color: #3b2c00; 
+            color: #ffd700;
+            border-bottom: 2px solid #ffd700;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .customer-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 10px;
+            border-bottom: 1px solid #333;
+            font-size: 13px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #444;
+        }
+        .modal-title { margin-top: 0; color: #ffd700; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        .sort-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 0 5px;
+        }
+        
+        .sort-container h3 {
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        
+        .sort-select {
+            width: auto;
+            padding: 6px 10px;
+            margin-bottom: 0;
+            font-size: 12px;
+            background-color: #2c2c2c;
+            border-radius: 4px;
+            border: 1px solid #555;
+            color: #ffd700;
+            cursor: pointer;
+        }
+
+        @media (min-width: 500px) {
+            .datetime-group { flex-direction: row; }
+            .button-row { flex-direction: row; }
+            .button-row button { flex: 1; margin-bottom: 0; }
+        }
+        
+        @media (max-width: 350px) {
+            .header-logo { width: 90%; }
+            .header-title-kasir { font-size: 15px; letter-spacing: 6px; }
+            .rental-info { flex-direction: column; align-items: flex-start; gap: 5px;}
+            .badge { align-self: flex-start; }
+            table { font-size: 11px; }
+            th, td { padding: 8px 4px; }
+            .summary-row.real { font-size: 14px; }
+            .sort-container { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .sort-select { width: 100%; }
+        }
+    </style>
+</head>
+<body onload="initApp()">
+
+<div class="container">
+    
+    <div class="header-logo-container">
+        <img src="file_00000000b64482079c599dd4ff2651d7.png" alt="Simon Playstation Logo" class="header-logo" onerror="this.style.display='none'; document.getElementById('teksPenggantiLogo').style.display='block';">
+        <h2 id="teksPenggantiLogo" style="display:none; color:#ffd700; margin-bottom: 5px;">🎮 SIMON PLAYSTATION</h2>
+        <div class="header-title-kasir">KASIR</div>
+    </div>
+
+    <div class="tab-nav">
+        <button id="btnTabKasir" class="active" onclick="bukaTab('kasir')">📝 Transaksi</button>
+        <button id="btnTabPelanggan" onclick="bukaTab('pelanggan')">👥 Pelanggan</button>
+    </div>
+
+    <!-- TAB 1: KASIR TRANSAKSI SEWA -->
+    <div id="tabKasir" class="tab-content active">
+        
+        <div class="form-group">
+            <label for="inputPencarianPelanggan">Pencarian Data Pelanggan</label>
+            <div class="searchable-dropdown">
+                <input type="text" id="inputPencarianPelanggan" placeholder="Ketik nama pelanggan..." onkeyup="filterPelanggan()" onclick="tampilkanDropdownPelanggan()" autocomplete="off">
+                <div id="dropdownPelangganCustom" class="dropdown-list"></div>
+            </div>
+
+            <div style="text-align:right; margin-top:-8px; margin-bottom:15px;">
+                <a href="#" onclick="bukaTab('pelanggan')" style="color:#d4af37; font-size:12px; text-decoration:none;">+ Tambah Pelanggan Baru</a>
+            </div>
+
+            <label for="unit">Pilih Unit PS</label>
+            <select id="unit" onchange="perbaruiOtomatis()">
+                <option value="PS3 (Unit 1)">PS3 - Unit 1</option>
+                <option value="PS3 (Unit 2)">PS3 - Unit 2</option>
+                <option value="PS3 (Unit 3)">PS3 - Unit 3</option>
+                <option value="PS3 (Unit 4)">PS3 - Unit 4</option>
+                <option value="PS4 (Unit 1)">PS4 - Unit 1</option>
+                <option value="PS5 (Unit 1)">PS5 - Unit 1</option>
+            </select>
+
+            <label for="paket">Pilih Paket Sewa</label>
+            <select id="paket" onchange="perbaruiOtomatis()">
+                <!-- MENU PAKET BARU DENGAN OPSI TANPA TV -->
+                <option value="12">Paket 12 Jam</option>
+                <option value="24">Paket 24 Jam</option>
+                <option value="12_notv">Paket 12 Jam (Tanpa TV)</option>
+                <option value="24_notv">Paket 24 Jam (Tanpa TV)</option>
+                <option value="custom">Waktu Bebas (Manual)</option>
+            </select>
+
+            <div class="datetime-group">
+                <div>
+                    <label for="waktuMulai">Waktu Ambil</label>
+                    <input type="datetime-local" id="waktuMulai" onchange="perbaruiOtomatis()">
+                </div>
+                <div>
+                    <label for="waktuAkhir">Waktu Kembali</label>
+                    <input type="datetime-local" id="waktuAkhir">
+                </div>
+            </div>
+
+            <label for="hargaPaket">Harga Paket (Rp)</label>
+            <input type="number" id="hargaPaket" value="0">
+
+            <button onclick="mulaiRental()">Catat Sewa 🚀</button>
+        </div>
+
+        <h3>Sedang Disewa</h3>
+        <div id="daftarRental"></div>
+
+        <h3>Laporan Transaksi Harian</h3>
+        <div class="form-group" style="background-color: #161616; padding: 12px;">
+            <div class="button-row">
+                <button class="btn-export" onclick="downloadTSV()">Unduh Laporan 📥</button>
+                <button class="btn-clear" onclick="hapusRiwayat()">Reset Data 🗑️</button>
+            </div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Nama / Unit</th>
+                            <th>Keuangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="isiTabelRiwayat"></tbody>
+                </table>
+            </div>
+            <div id="ringkasanKeuangan"></div>
+        </div>
+    </div>
+
+    <!-- TAB 2: DATA PELANGGAN -->
+    <div id="tabPelanggan" class="tab-content">
+        <div class="form-group" style="background-color: #22152e;">
+            <h4 style="margin-top:0; color:#d4a5ff; font-size: 15px;">➕ Input Pelanggan Baru</h4>
+            <label for="inputNamaPelanggan">Nama Lengkap</label>
+            <input type="text" id="inputNamaPelanggan" placeholder="Contoh: Budi Santoso" autocomplete="off">
+            <label for="inputNoHP">No. WhatsApp / HP</label>
+            <input type="tel" id="inputNoHP" placeholder="Contoh: 08123456789" autocomplete="off">
+            <label for="inputJaminan">Catatan Jaminan</label>
+            <input type="text" id="inputJaminan" placeholder="Contoh: KTP di laci 1 / Foto di HP" autocomplete="off">
+            <button class="btn-add-customer" onclick="simpanPelanggan()">Simpan Data 💾</button>
+        </div>
+
+        <div class="sort-container">
+            <h3>Daftar Pelanggan</h3>
+            <select id="sortPelanggan" class="sort-select" onchange="tampilkanDaftarPelanggan()">
+                <option value="nama">🔤 Urutkan: Nama (A-Z)</option>
+                <option value="uang">💰 Paling Banyak Pemasukan</option>
+                <option value="order">⭐ Paling Sering Order</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="padding:0; background: transparent; box-shadow: none;" id="daftarPelangganList"></div>
+    </div>
+</div>
+
+<!-- Modal Edit Waktu -->
+<div id="modalEditWaktu" class="modal-overlay">
+    <div class="modal-content">
+        <h4 class="modal-title">Ubah Waktu Mulai</h4>
+        <input type="hidden" id="editTransaksiId">
+        <label for="editWaktuMulai">Waktu Ambil Baru</label>
+        <input type="datetime-local" id="editWaktuMulai">
+        <p style="font-size: 12px; color: #aaa; margin-top: -5px; line-height: 1.3;">Waktu kembali dan tagihan akan disesuaikan otomatis berdasarkan paket awal.</p>
+        <div class="button-row" style="margin-top: 15px;">
+            <button onclick="simpanWaktuBaru()" style="background-color: var(--success); color: white; border: none;">Simpan</button>
+            <button onclick="tutupModal()" style="background-color: #555; color: white; border: none;">Batal</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let daftarMain = [];
+    let riwayatTransaksi = [];
+    let daftarPelanggan = []; 
+    let namaPelangganTerpilih = ""; 
+
+    function muatDataLokal() {
+        try { daftarMain = JSON.parse(localStorage.getItem('dataRentalSewa')) || []; } catch(e) { daftarMain = []; }
+        try { riwayatTransaksi = JSON.parse(localStorage.getItem('riwayatRentalSewa')) || []; } catch(e) { riwayatTransaksi = []; }
+        try { daftarPelanggan = JSON.parse(localStorage.getItem('dataPelangganPS')) || []; } catch(e) { daftarPelanggan = []; }
+    }
+
+    function formatDateTimeLocal(date) {
+        const tzOffset = date.getTimezoneOffset() * 60000; 
+        return (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+    }
+
+    function initApp() {
+        muatDataLokal();
+        const now = new Date();
+        document.getElementById('waktuMulai').value = formatDateTimeLocal(now);
+        perbaruiOtomatis(); 
+        tampilkanDaftarPelanggan();
+        setInterval(simpanDanTampilkan, 30000);
+        simpanDanTampilkan();
+    }
+
+    function ambilStatistikPelanggan(namaPelanggan) {
+        let stats = {
+            totalOrder: 0,
+            uangMasuk: 0,
+            paket12: 0,
+            paket24: 0,
+            paket12NoTv: 0,
+            paket24NoTv: 0,
+            paketBebas: 0
+        };
+
+        riwayatTransaksi.forEach(transaksi => {
+            if (transaksi.nama.toLowerCase() === namaPelanggan.toLowerCase()) {
+                stats.totalOrder++;
+                
+                const tagihan = transaksi.totalHarga;
+                const uangBayar = (transaksi.uangDibayar !== undefined) ? transaksi.uangDibayar : tagihan;
+                const kembalian = (transaksi.uangKembalian !== undefined) ? transaksi.uangKembalian : 0;
+                
+                if (kembalian < 0) {
+                    stats.uangMasuk += uangBayar;
+                } else {
+                    stats.uangMasuk += tagihan; 
+                }
+
+                // Pengecekan riwayat paket (mendukung format lama dan baru)
+                const pVal = transaksi.paketValue || "";
+                const pStr = transaksi.paket || "";
+
+                if (pVal === "12" || (pVal === "" && pStr.includes("12") && !pStr.toLowerCase().includes("tanpa tv"))) {
+                    stats.paket12++;
+                } else if (pVal === "24" || (pVal === "" && pStr.includes("24") && !pStr.toLowerCase().includes("tanpa tv"))) {
+                    stats.paket24++;
+                } else if (pVal === "12_notv" || pStr.toLowerCase().includes("12 jam (tanpa tv)")) {
+                    stats.paket12NoTv++;
+                } else if (pVal === "24_notv" || pStr.toLowerCase().includes("24 jam (tanpa tv)")) {
+                    stats.paket24NoTv++;
+                } else {
+                    stats.paketBebas++;
+                }
+            }
+        });
+
+        return stats;
+    }
+
+    function tampilkanDropdownPelanggan() {
+        const dropdown = document.getElementById('dropdownPelangganCustom');
+        dropdown.style.display = 'block';
+        namaPelangganTerpilih = ""; 
+        filterPelanggan();
+    }
+
+    function filterPelanggan() {
+        const input = document.getElementById('inputPencarianPelanggan').value.toLowerCase();
+        const dropdown = document.getElementById('dropdownPelangganCustom');
+        dropdown.innerHTML = '';
+        const pelangganUrut = [...daftarPelanggan].sort((a, b) => a.nama.localeCompare(b.nama));
+        const hasilFilter = pelangganUrut.filter(p => p.nama.toLowerCase().includes(input));
+        
+        if (hasilFilter.length === 0) {
+            dropdown.innerHTML = '<div style="padding:15px; color:#aaa; font-size:13px; text-align:center;">Data tidak ditemukan.</div>';
+            return;
+        }
+
+        hasilFilter.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            
+            const stats = ambilStatistikPelanggan(p.nama);
+            let badgeOrder = stats.totalOrder > 0 ? ` <span style="color:var(--success); font-size:11px;">(⭐ ${stats.totalOrder} Order)</span>` : '';
+
+            let info = `<b>${p.nama}</b>${badgeOrder}`;
+            if(p.nohp !== "-") info += ` <span style="color:#aaa; font-size:12px;"><br>${p.nohp}</span>`;
+            
+            div.innerHTML = info;
+            div.onclick = function() {
+                document.getElementById('inputPencarianPelanggan').value = p.nama; 
+                namaPelangganTerpilih = p.nama; 
+                dropdown.style.display = 'none'; 
+            };
+            dropdown.appendChild(div);
+        });
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('dropdownPelangganCustom');
+        const input = document.getElementById('inputPencarianPelanggan');
+        if (event.target !== input && event.target !== dropdown && !dropdown.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    function bukaTab(namaTab) {
+        document.getElementById('tabKasir').classList.remove('active');
+        document.getElementById('tabPelanggan').classList.remove('active');
+        document.getElementById('btnTabKasir').classList.remove('active');
+        document.getElementById('btnTabPelanggan').classList.remove('active');
+
+        if(namaTab === 'kasir') {
+            document.getElementById('tabKasir').classList.add('active');
+            document.getElementById('btnTabKasir').classList.add('active');
+        } else {
+            document.getElementById('tabPelanggan').classList.add('active');
+            document.getElementById('btnTabPelanggan').classList.add('active');
+            tampilkanDaftarPelanggan(); 
+        }
+    }
+
+    function simpanPelanggan() {
+        const nama = document.getElementById('inputNamaPelanggan').value.trim();
+        const nohp = document.getElementById('inputNoHP').value.trim();
+        const jaminan = document.getElementById('inputJaminan').value.trim();
+        if (!nama) { alert("Nama Pelanggan wajib diisi!"); return; }
+        const cekDuplikat = daftarPelanggan.find(p => p.nama.toLowerCase() === nama.toLowerCase());
+        if (cekDuplikat) { alert("Pelanggan dengan nama tersebut sudah terdaftar."); return; }
+        const pelangganBaru = { id: Date.now(), nama: nama, nohp: nohp || "-", jaminan: jaminan || "-" };
+        daftarPelanggan.push(pelangganBaru);
+        localStorage.setItem('dataPelangganPS', JSON.stringify(daftarPelanggan));
+        document.getElementById('inputNamaPelanggan').value = '';
+        document.getElementById('inputNoHP').value = '';
+        document.getElementById('inputJaminan').value = '';
+        alert(`Pelanggan '${nama}' berhasil disimpan!`);
+        tampilkanDaftarPelanggan();
+    }
+
+    function hapusPelanggan(id) {
+        if(confirm("Yakin hapus data pelanggan ini?")) {
+            daftarPelanggan = daftarPelanggan.filter(p => p.id !== id);
+            localStorage.setItem('dataPelangganPS', JSON.stringify(daftarPelanggan));
+            tampilkanDaftarPelanggan();
+        }
+    }
+
+    function tampilkanDaftarPelanggan() {
+        const listDiv = document.getElementById('daftarPelangganList');
+        const sortType = document.getElementById('sortPelanggan').value; 
+        
+        listDiv.innerHTML = '';
+        if(daftarPelanggan.length === 0) {
+            listDiv.innerHTML = '<p style="padding:15px; text-align:center; color:#777; margin:0; background:#1e1e1e; border-radius:8px;">Belum ada data pelanggan.</p>';
+            return;
+        }
+        
+        let pelangganDenganStats = daftarPelanggan.map(p => {
+            return { ...p, stats: ambilStatistikPelanggan(p.nama) };
+        });
+
+        if (sortType === 'uang') {
+            pelangganDenganStats.sort((a, b) => b.stats.uangMasuk - a.stats.uangMasuk);
+        } else if (sortType === 'order') {
+            pelangganDenganStats.sort((a, b) => b.stats.totalOrder - a.stats.totalOrder);
+        } else {
+            pelangganDenganStats.sort((a, b) => a.nama.localeCompare(b.nama));
+        }
+        
+        pelangganDenganStats.forEach(p => {
+            const stats = p.stats; 
+            
+            let htmlBadgeOrder = '';
+            let htmlDetailStats = '';
+            
+            if (stats.totalOrder > 0) {
+                htmlBadgeOrder = `<span class="badge-order-count">⭐ ${stats.totalOrder}x Order</span>`;
+                
+                // Kondisi Tampilan: Hanya render paket yang pernah disewa agar tidak memenuhi layar
+                let statHTML = '';
+                if(stats.paket12 > 0) statHTML += `<div class="stat-row"><span>📦 Pkt 12 Jam:</span> <span>${stats.paket12}x</span></div>`;
+                if(stats.paket24 > 0) statHTML += `<div class="stat-row"><span>📦 Pkt 24 Jam:</span> <span>${stats.paket24}x</span></div>`;
+                if(stats.paket12NoTv > 0) statHTML += `<div class="stat-row"><span>📺 12 Jam (Tanpa TV):</span> <span>${stats.paket12NoTv}x</span></div>`;
+                if(stats.paket24NoTv > 0) statHTML += `<div class="stat-row"><span>📺 24 Jam (Tanpa TV):</span> <span>${stats.paket24NoTv}x</span></div>`;
+                if(stats.paketBebas > 0) statHTML += `<div class="stat-row"><span>⏰ Bebas/Custom:</span> <span>${stats.paketBebas}x</span></div>`;
+
+                htmlDetailStats = `
+                    <div class="customer-stats">
+                        ${statHTML}
+                        <div class="stat-row" style="margin-top: 5px; border-top: 1px solid #444; padding-top: 5px;">
+                            <span>💰 Total Masuk:</span> <span class="total-money">Rp ${stats.uangMasuk.toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                htmlBadgeOrder = `<span class="badge-order-count" style="background:#444; color:#aaa;">Belum Order</span>`;
+            }
+
+            listDiv.innerHTML += `
+                <div class="customer-card customer-list-item">
+                    <div style="flex:1;">
+                        <strong style="color: white; font-size: 15px;">👤 ${p.nama}</strong>
+                        ${htmlBadgeOrder}
+                        <br>
+                        <div style="color: #aaa; font-size: 12px; margin-top: 6px; line-height: 1.4;">
+                            📞 ${p.nohp}<br>
+                            💳 Jaminan: ${p.jaminan}
+                        </div>
+                        ${htmlDetailStats}
+                    </div>
+                    <div>
+                        <button onclick="hapusPelanggan(${p.id})" style="background:transparent; color:var(--danger); padding:10px; width:auto; font-size:20px; border:none; margin:0; margin-top:5px;" title="Hapus Pelanggan">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function perbaruiOtomatis() {
+        hitungWaktuKembali();
+        hitungHargaPaket();
+    }
+
+    function hitungWaktuKembali() {
+        const paket = document.getElementById('paket').value;
+        const inputMulai = document.getElementById('waktuMulai').value;
+        const inputAkhir = document.getElementById('waktuAkhir');
+        if (!inputMulai || paket === 'custom') return; 
+        const waktuMulaiDate = new Date(inputMulai);
+        
+        // Memakai parseInt sudah otomatis mengambil angka 12 atau 24 dari string "12_notv" / "24_notv"
+        const tambahanJam = parseInt(paket); 
+        
+        const waktuAkhirDate = new Date(waktuMulaiDate.getTime() + (tambahanJam * 60 * 60 * 1000));
+        inputAkhir.value = formatDateTimeLocal(waktuAkhirDate);
+    }
+
+    // UPDATE HARGA PAKET BARU TERMASUK TANPA TV
+    function hitungHargaPaket() {
+        const dropdownUnit = document.getElementById('unit');
+        const paket = document.getElementById('paket').value;
+        const inputHarga = document.getElementById('hargaPaket');
+        if (!dropdownUnit || !dropdownUnit.value) { inputHarga.value = 0; return; }
+        const unit = dropdownUnit.value;
+        let harga = 0;
+        
+        if (unit.includes('PS3')) {
+            if (paket === '12') harga = 30000; 
+            else if (paket === '24') harga = 60000;
+            else if (paket === '12_notv') harga = 30000;
+            else if (paket === '24_notv') harga = 40000;
+        } else if (unit.includes('PS4')) {
+            if (paket === '12') harga = 40000; 
+            else if (paket === '24') harga = 80000;
+            else if (paket === '12_notv') harga = 30000;
+            else if (paket === '24_notv') harga = 60000;
+        } else if (unit.includes('PS5')) {
+            if (paket === '12') harga = 75000; 
+            else if (paket === '24') harga = 150000;
+            else if (paket === '12_notv') harga = 65000;
+            else if (paket === '24_notv') harga = 120000;
+        }
+        
+        if (paket !== 'custom') inputHarga.value = harga;
+    }
+
+    function perbaruiDropdownUnit() {
+        const dropdown = document.getElementById('unit');
+        if (!dropdown) return;
+        const unitSedangDisewa = daftarMain.map(item => item ? item.unit : null).filter(Boolean);
+        Array.from(dropdown.options).forEach(option => {
+            const namaUnit = option.value;
+            if (unitSedangDisewa.includes(namaUnit)) {
+                option.text = `${namaUnit} 🔴`;
+                option.disabled = true;
+            } else {
+                option.text = namaUnit;
+                option.disabled = false;
+            }
+        });
+        if (dropdown.options[dropdown.selectedIndex] && dropdown.options[dropdown.selectedIndex].disabled) {
+            const firstAvailable = Array.from(dropdown.options).find(opt => !opt.disabled);
+            if (firstAvailable) firstAvailable.selected = true;
+        }
+    }
+
+    function mulaiRental() {
+        if (!namaPelangganTerpilih) { alert('Silakan pilih nama pelanggan dari daftar pencarian!'); return; }
+        const dropdownUnit = document.getElementById('unit');
+        const harga = document.getElementById('hargaPaket').value;
+        const inputMulai = document.getElementById('waktuMulai').value;
+        const inputAkhir = document.getElementById('waktuAkhir').value;
+        const paketStr = document.getElementById('paket').options[document.getElementById('paket').selectedIndex].text;
+        const paketValue = document.getElementById('paket').value;
+
+        if (!dropdownUnit || !dropdownUnit.value || dropdownUnit.options[dropdownUnit.selectedIndex].disabled) { alert('Semua unit PS sedang disewa!'); return; }
+        const unit = dropdownUnit.value;
+
+        if (!inputMulai || !inputAkhir || !harga) { alert('Semua data Waktu dan Harga harus diisi!'); return; }
+
+        const dataPenyewa = daftarPelanggan.find(p => p.nama === namaPelangganTerpilih);
+        if(!dataPenyewa) { alert("Data pelanggan bermasalah."); return; }
+
+        const dataBaru = {
+            id: Date.now(),
+            nama: dataPenyewa.nama,
+            nohp: dataPenyewa.nohp,
+            jaminan: dataPenyewa.jaminan,
+            unit: unit,
+            paket: paketStr,
+            paketValue: paketValue, 
+            hargaPaket: parseInt(harga),
+            waktuMulai: inputMulai,
+            waktuAkhir: inputAkhir
+        };
+
+        daftarMain.push(dataBaru);
+        simpanDanTampilkan();
+        
+        document.getElementById('inputPencarianPelanggan').value = '';
+        namaPelangganTerpilih = "";
+        document.getElementById('paket').value = '12'; 
+        const now = new Date();
+        document.getElementById('waktuMulai').value = formatDateTimeLocal(now);
+        perbaruiOtomatis();
+        document.getElementById('daftarRental').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function bukaModalEditWaktu(id) {
+        const data = daftarMain.find(item => item.id === id);
+        if(!data) return;
+        
+        document.getElementById('editTransaksiId').value = data.id;
+        document.getElementById('editWaktuMulai').value = data.waktuMulai;
+        document.getElementById('modalEditWaktu').style.display = 'flex';
+    }
+
+    function tutupModal() {
+        document.getElementById('modalEditWaktu').style.display = 'none';
+    }
+
+    function simpanWaktuBaru() {
+        const id = parseInt(document.getElementById('editTransaksiId').value);
+        const waktuBaru = document.getElementById('editWaktuMulai').value;
+        
+        if(!waktuBaru) { alert("Waktu tidak boleh kosong!"); return; }
+
+        const index = daftarMain.findIndex(item => item.id === id);
+        if(index > -1) {
+            daftarMain[index].waktuMulai = waktuBaru;
+            
+            if(daftarMain[index].paketValue !== 'custom') {
+                const tambahanJam = parseInt(daftarMain[index].paketValue);
+                const waktuMulaiDate = new Date(waktuBaru);
+                const waktuAkhirDate = new Date(waktuMulaiDate.getTime() + (tambahanJam * 60 * 60 * 1000));
+                daftarMain[index].waktuAkhir = formatDateTimeLocal(waktuAkhirDate);
+            }
+
+            simpanDanTampilkan();
+            tutupModal();
+        }
+    }
+
+    function batalkanRental(id) {
+        const index = daftarMain.findIndex(item => item.id === id);
+        if (index === -1) return;
+
+        const konfirmasi = confirm(`HAPUS TRANSAKSI INI?\n\nJika dihapus:\n- Transaksi ini dianggap BATAL dan TIDAK akan masuk ke laporan keuangan.\n- Unit PS akan kembali berstatus "Tersedia".`);
+        
+        if (konfirmasi) {
+            daftarMain.splice(index, 1);
+            simpanDanTampilkan();
+            perbaruiOtomatis(); 
+        }
+    }
+
+    function selesaiRental(id) {
+        const index = daftarMain.findIndex(item => item.id === id);
+        if (index === -1) return;
+
+        const data = daftarMain[index];
+        const formatMulai = new Date(data.waktuMulai).toLocaleString('id-ID', {dateStyle: 'medium', timeStyle: 'short'});
+        const formatSelesai = new Date(data.waktuAkhir).toLocaleString('id-ID', {dateStyle: 'medium', timeStyle: 'short'});
+        const tagihan = parseInt(data.hargaPaket);
+
+        let inputBayar = prompt(`TAGIHAN: Rp ${tagihan.toLocaleString('id-ID')}\n\nUang Tunai dari Pelanggan:`, tagihan);
+        if (inputBayar === null) return; 
+
+        let uangBayar = parseInt(inputBayar.replace(/\D/g, '')); 
+        if (isNaN(uangBayar)) uangBayar = tagihan; 
+
+        let uangKembali = uangBayar - tagihan;
+        let infoKembalian = "";
+        let isDiskon = false; 
+        
+        if (uangKembali > 0) {
+            infoKembalian = `\nUang Dibayar: Rp ${uangBayar.toLocaleString('id-ID')}\nKEMBALIAN: Rp ${uangKembali.toLocaleString('id-ID')}`;
+        } else if (uangKembali < 0) {
+            const selisih = Math.abs(uangKembali);
+            const konfirmasiDiskon = confirm(`KURANG BAYAR Rp ${selisih.toLocaleString('id-ID')}.\n\nJadikan DISKON?\n[OK] = Ya, ini Diskon\n[Batal] = Tidak, ini Kasbon/Hutang`);
+            if (konfirmasiDiskon) {
+                isDiskon = true;
+                infoKembalian = `\nUang Dibayar: Rp ${uangBayar.toLocaleString('id-ID')}\nDISKON: Rp ${selisih.toLocaleString('id-ID')} ✅`;
+            } else {
+                infoKembalian = `\nUang Dibayar: Rp ${uangBayar.toLocaleString('id-ID')}\nKURANG: Rp ${selisih.toLocaleString('id-ID')} ❌`;
+            }
+        } else {
+            infoKembalian = `\nUang Dibayar: Rp ${uangBayar.toLocaleString('id-ID')}\nKEMBALIAN: Uang Pas`;
+        }
+
+        alert(`STRUK SEWA PS\n\nNama: ${data.nama}\nUnit: ${data.unit}\n\nTagihan: Rp ${tagihan.toLocaleString('id-ID')}${infoKembalian}\n\n*JANGAN LUPA KEMBALIKAN BARANG JAMINAN*`);
+
+        const dataRiwayat = {
+            idTransaksi: data.id,
+            tanggalSelesai: new Date().toISOString(), 
+            nama: data.nama,
+            unit: data.unit,
+            paket: data.paket,
+            paketValue: data.paketValue, // Menyimpan value juga ke riwayat untuk akurasi statistik
+            waktuMulai: data.waktuMulai,
+            waktuAkhir: data.waktuAkhir,
+            totalHarga: data.hargaPaket,
+            uangDibayar: uangBayar,
+            uangKembalian: uangKembali,
+            isDiskon: isDiskon 
+        };
+        
+        riwayatTransaksi.push(dataRiwayat);
+        localStorage.setItem('riwayatRentalSewa', JSON.stringify(riwayatTransaksi));
+
+        daftarMain.splice(index, 1);
+        simpanDanTampilkan();
+        perbaruiOtomatis(); 
+    }
+
+    function simpanDanTampilkan() {
+        localStorage.setItem('dataRentalSewa', JSON.stringify(daftarMain));
+        perbaruiDropdownUnit();
+        tampilkanRiwayat();
+
+        const wadah = document.getElementById('daftarRental');
+        wadah.innerHTML = '';
+        if(daftarMain.length === 0) {
+            wadah.innerHTML = '<p style="text-align:center; color:#777; font-size:14px; margin-top:20px;">Tidak ada unit yang sedang disewa.</p>';
+            return;
+        }
+
+        const waktuSekarang = new Date().getTime(); 
+
+        daftarMain.forEach(item => {
+            if(!item) return; 
+            const formatMulai = new Date(item.waktuMulai).toLocaleString('id-ID', {dateStyle: 'short', timeStyle: 'short'});
+            const formatSelesai = new Date(item.waktuAkhir).toLocaleString('id-ID', {dateStyle: 'short', timeStyle: 'short'});
+            
+            const waktuAkhirMS = new Date(item.waktuAkhir).getTime();
+            let badgeTerlambat = ''; let styleTambahan = '';
+
+            if (waktuSekarang >= waktuAkhirMS) {
+                badgeTerlambat = `<div class="badge-late">⚠️ Sudah Waktunya Kembali!</div>`;
+                styleTambahan = 'border: 2px solid var(--danger);'; 
+            }
+
+            wadah.innerHTML += `
+                <div class="rental-card" style="${styleTambahan}">
+                    <div class="rental-info">
+                        <strong>👤 ${item.nama}</strong>
+                        <span class="badge">${item.unit}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #aaa; margin-top: 2px;">
+                        📌 ${item.paket} | 💳 ${item.jaminan}
+                    </div>
+                    ${badgeTerlambat} 
+                    <div class="time-details">
+                        <div>
+                            Mulai : <b>${formatMulai}</b>
+                            <button class="btn-edit-waktu" onclick="bukaModalEditWaktu(${item.id})">Ubah ✏️</button>
+                        </div>
+                        <div style="margin-top: 5px;">Akhir : <b class="highlight">${formatSelesai}</b></div>
+                        <div style="margin-top: 8px; border-top: 1px solid #444; padding-top: 8px; font-weight: bold; color: var(--success); font-size: 14px;">
+                            Total Tagihan: Rp ${item.hargaPaket.toLocaleString('id-ID')}
+                        </div>
+                    </div>
+                    <button class="btn-stop" onclick="selesaiRental(${item.id})">Cetak Struk Selesai 🛑</button>
+                    <button class="btn-delete-rental" onclick="batalkanRental(${item.id})">Hapus / Batalkan Transaksi Ini 🗑️</button>
+                </div>
+            `;
+        });
+    }
+
+    function tampilkanRiwayat() {
+        const tbody = document.getElementById('isiTabelRiwayat');
+        const divRingkasan = document.getElementById('ringkasanKeuangan');
+        tbody.innerHTML = '';
+        
+        if (riwayatTransaksi.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="padding: 15px; text-align: center; color: #777; font-size: 13px;">Belum ada riwayat transaksi.</td></tr>';
+            divRingkasan.innerHTML = '';
+            return;
+        }
+
+        let totalTagihanAsli = 0; 
+        let totalUangMasukReal = 0; 
+        let totalPiutangKasbon = 0; 
+        let totalDiskon = 0; 
+        
+        const riwayatTerbaruDiatas = [...riwayatTransaksi].reverse();
+
+        riwayatTerbaruDiatas.forEach(t => {
+            const tglSelesai = new Date(t.tanggalSelesai).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+            const tagihanPaket = t.totalHarga;
+            const uangBayar = (t.uangDibayar !== undefined) ? t.uangDibayar : tagihanPaket;
+            const kembalian = (t.uangKembalian !== undefined) ? t.uangKembalian : 0;
+            const diskon = t.isDiskon || false; 
+            
+            totalTagihanAsli += tagihanPaket;
+
+            if (kembalian < 0) {
+                totalUangMasukReal += uangBayar; 
+                if (diskon) { totalDiskon += Math.abs(kembalian); } 
+                else { totalPiutangKasbon += Math.abs(kembalian); }
+            } else {
+                totalUangMasukReal += tagihanPaket;
+            }
+
+            let statusKembalianText = `Sisa: Rp ${kembalian.toLocaleString('id-ID')}`;
+            if (kembalian < 0) {
+                if (diskon) { statusKembalianText = `<span class="text-diskon">Disc: Rp ${Math.abs(kembalian).toLocaleString('id-ID')}</span>`; } 
+                else { statusKembalianText = `<span style="color: var(--danger)">Bon: Rp ${Math.abs(kembalian).toLocaleString('id-ID')}</span>`; }
+            } else if (kembalian === 0) {
+                 statusKembalianText = `<span style="color: #aaa;">Uang Pas</span>`;
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><span style="font-size:10px; color:#aaa;">${tglSelesai.replace(', ', '<br>')}</span></td>
+                    <td>
+                        <b style="font-size:13px;">${t.nama}</b><br>
+                        <span style="font-size: 10px; color: #888;">${t.unit}</span>
+                    </td>
+                    <td>
+                        <strong style="color: white; font-size:13px;">Rp ${tagihanPaket.toLocaleString('id-ID')}</strong>
+                        <div class="keuangan-info">
+                            <span>In: Rp ${uangBayar.toLocaleString('id-ID')}</span>
+                            <span>${statusKembalianText}</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        let rincianHTML = `<div class="summary-box">
+            <div class="summary-row tagihan"><span>Omzet Tagihan:</span><span>Rp ${totalTagihanAsli.toLocaleString('id-ID')}</span></div>`;
+        if (totalPiutangKasbon > 0) rincianHTML += `<div class="summary-row piutang"><span>Piutang (Kasbon):</span><span>- Rp ${totalPiutangKasbon.toLocaleString('id-ID')}</span></div>`;
+        if (totalDiskon > 0) rincianHTML += `<div class="summary-row diskon"><span>Diskon Diberikan:</span><span>- Rp ${totalDiskon.toLocaleString('id-ID')}</span></div>`;
+        rincianHTML += `<div class="summary-row real"><span>Uang Tunai Laci:</span><span>Rp ${totalUangMasukReal.toLocaleString('id-ID')}</span></div></div>`;
+        divRingkasan.innerHTML = rincianHTML;
+    }
+
+    function downloadTSV() {
+        if (riwayatTransaksi.length === 0) { alert("Belum ada data."); return; }
+        let tsvContent = "ID Transaksi\tTanggal Selesai\tNama Penyewa\tUnit\tPaket\tWaktu Ambil\tWaktu Kembali\tTagihan Paket\tTunai Masuk\tStatus Bayar\tSelisih Rp\n";
+        riwayatTransaksi.forEach(t => {
+            const tglSelesai = new Date(t.tanggalSelesai).toLocaleString('id-ID');
+            const tglMulai = new Date(t.waktuMulai).toLocaleString('id-ID');
+            const tglAkhir = new Date(t.waktuAkhir).toLocaleString('id-ID');
+            const dibayar = (t.uangDibayar !== undefined) ? t.uangDibayar : t.totalHarga;
+            const kembali = (t.uangKembalian !== undefined) ? t.uangKembalian : 0;
+            const diskon = t.isDiskon || false;
+            let status = "Lunas/Lebih"; let selisih = kembali;
+            if (kembali < 0) {
+                if (diskon) { status = "Diskon"; selisih = Math.abs(kembali); } 
+                else { status = "Kurang (Kasbon)"; selisih = Math.abs(kembali); }
+            }
+            tsvContent += `${t.idTransaksi}\t${tglSelesai}\t${t.nama}\t${t.unit}\t${t.paket}\t${tglMulai}\t${tglAkhir}\t${t.totalHarga}\t${dibayar}\t${status}\t${selisih}\n`;
+        });
+        const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Laporan_PS_${new Date().toISOString().slice(0,10)}.tsv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function hapusRiwayat() {
+        if (confirm("PERHATIAN:\nMenghapus Riwayat Transaksi ini juga akan mereset hitungan 'Total Order' dan 'Uang Masuk' milik semua pelanggan kembali menjadi 0.\n\nYakin hapus seluruh laporan? Data tidak bisa dikembalikan.")) {
+            riwayatTransaksi = []; localStorage.removeItem('riwayatRentalSewa');
+            tampilkanRiwayat(); 
+            if(document.getElementById('tabPelanggan').classList.contains('active')) {
+                tampilkanDaftarPelanggan();
+            }
+            alert("Laporan berhasil dikosongkan!");
+        }
+    }
+</script>
+
+</body>
+</html>
