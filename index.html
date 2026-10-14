@@ -303,6 +303,23 @@
             white-space: nowrap;
         }
         
+        /* Tambahan style untuk rincian waktu & paket di laporan */
+        .riwayat-detail-paket {
+            font-size: 10px;
+            color: #bbb;
+            margin-top: 4px;
+            display: inline-block;
+            background: #2a2a2a;
+            padding: 2px 5px;
+            border-radius: 3px;
+            border: 1px solid #444;
+        }
+        .riwayat-detail-waktu {
+            font-size: 10px;
+            color: #999;
+            margin-top: 3px;
+        }
+
         .keuangan-info {
             font-size: 11px;
             color: #aaa;
@@ -481,7 +498,6 @@
 
             <label for="paket">Pilih Paket Sewa</label>
             <select id="paket" onchange="perbaruiOtomatis()">
-                <!-- MENU PAKET BARU DENGAN OPSI TANPA TV -->
                 <option value="12">Paket 12 Jam</option>
                 <option value="24">Paket 24 Jam</option>
                 <option value="12_notv">Paket 12 Jam (Tanpa TV)</option>
@@ -520,8 +536,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Waktu</th>
-                            <th>Nama / Unit</th>
+                            <th>Selesai</th>
+                            <th>Detail Transaksi</th>
                             <th>Keuangan</th>
                         </tr>
                     </thead>
@@ -625,7 +641,6 @@
                     stats.uangMasuk += tagihan; 
                 }
 
-                // Pengecekan riwayat paket (mendukung format lama dan baru)
                 const pVal = transaksi.paketValue || "";
                 const pStr = transaksi.paket || "";
 
@@ -765,7 +780,6 @@
             if (stats.totalOrder > 0) {
                 htmlBadgeOrder = `<span class="badge-order-count">⭐ ${stats.totalOrder}x Order</span>`;
                 
-                // Kondisi Tampilan: Hanya render paket yang pernah disewa agar tidak memenuhi layar
                 let statHTML = '';
                 if(stats.paket12 > 0) statHTML += `<div class="stat-row"><span>📦 Pkt 12 Jam:</span> <span>${stats.paket12}x</span></div>`;
                 if(stats.paket24 > 0) statHTML += `<div class="stat-row"><span>📦 Pkt 24 Jam:</span> <span>${stats.paket24}x</span></div>`;
@@ -816,15 +830,11 @@
         const inputAkhir = document.getElementById('waktuAkhir');
         if (!inputMulai || paket === 'custom') return; 
         const waktuMulaiDate = new Date(inputMulai);
-        
-        // Memakai parseInt sudah otomatis mengambil angka 12 atau 24 dari string "12_notv" / "24_notv"
         const tambahanJam = parseInt(paket); 
-        
         const waktuAkhirDate = new Date(waktuMulaiDate.getTime() + (tambahanJam * 60 * 60 * 1000));
         inputAkhir.value = formatDateTimeLocal(waktuAkhirDate);
     }
 
-    // UPDATE HARGA PAKET BARU TERMASUK TANPA TV
     function hitungHargaPaket() {
         const dropdownUnit = document.getElementById('unit');
         const paket = document.getElementById('paket').value;
@@ -968,8 +978,6 @@
         if (index === -1) return;
 
         const data = daftarMain[index];
-        const formatMulai = new Date(data.waktuMulai).toLocaleString('id-ID', {dateStyle: 'medium', timeStyle: 'short'});
-        const formatSelesai = new Date(data.waktuAkhir).toLocaleString('id-ID', {dateStyle: 'medium', timeStyle: 'short'});
         const tagihan = parseInt(data.hargaPaket);
 
         let inputBayar = prompt(`TAGIHAN: Rp ${tagihan.toLocaleString('id-ID')}\n\nUang Tunai dari Pelanggan:`, tagihan);
@@ -1005,7 +1013,7 @@
             nama: data.nama,
             unit: data.unit,
             paket: data.paket,
-            paketValue: data.paketValue, // Menyimpan value juga ke riwayat untuk akurasi statistik
+            paketValue: data.paketValue, 
             waktuMulai: data.waktuMulai,
             waktuAkhir: data.waktuAkhir,
             totalHarga: data.hargaPaket,
@@ -1096,10 +1104,17 @@
 
         riwayatTerbaruDiatas.forEach(t => {
             const tglSelesai = new Date(t.tanggalSelesai).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+            
+            // Format jam awal dan jam akhir untuk ditampilkan
+            const jamMulai = new Date(t.waktuMulai).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+            const jamAkhir = new Date(t.waktuAkhir).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+            const tglAkhir = new Date(t.waktuAkhir).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
+
             const tagihanPaket = t.totalHarga;
             const uangBayar = (t.uangDibayar !== undefined) ? t.uangDibayar : tagihanPaket;
             const kembalian = (t.uangKembalian !== undefined) ? t.uangKembalian : 0;
             const diskon = t.isDiskon || false; 
+            const namaPaket = t.paket || "Paket Custom";
             
             totalTagihanAsli += tagihanPaket;
 
@@ -1119,17 +1134,24 @@
                  statusKembalianText = `<span style="color: #aaa;">Uang Pas</span>`;
             }
 
+            // Menambahkan Detail Paket dan Jam di Kolom Tengah
             tbody.innerHTML += `
                 <tr>
                     <td><span style="font-size:10px; color:#aaa;">${tglSelesai.replace(', ', '<br>')}</span></td>
                     <td>
                         <b style="font-size:13px;">${t.nama}</b><br>
-                        <span style="font-size: 10px; color: #888;">${t.unit}</span>
+                        <span style="font-size: 10px; color: #888;">${t.unit}</span><br>
+                        
+                        <!-- Rincian Paket dan Waktu -->
+                        <span class="riwayat-detail-paket">${namaPaket}</span><br>
+                        <div class="riwayat-detail-waktu">
+                            🕒 ${jamMulai} - ${jamAkhir} (${tglAkhir})
+                        </div>
                     </td>
                     <td>
                         <strong style="color: white; font-size:13px;">Rp ${tagihanPaket.toLocaleString('id-ID')}</strong>
                         <div class="keuangan-info">
-                            <span>In: Rp ${uangBayar.toLocaleString('id-ID')}</span>
+                            <span>In: Rp ${uangBayar.toLocaleString('id-ID')}</span><br>
                             <span>${statusKembalianText}</span>
                         </div>
                     </td>
