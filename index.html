@@ -186,6 +186,34 @@
         }
         .btn-riwayat-setor:hover { background-color: rgba(100, 181, 246, 0.1); }
 
+        .btn-reprint {
+            background-color: transparent;
+            color: #ffd700;
+            border: 1px solid #755a00;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            display: inline-block;
+            width: 100%;
+        }
+        .btn-reprint:hover { background-color: #5c4400; color: white; }
+
+        .btn-lunasi {
+            background-color: transparent;
+            color: var(--success);
+            border: 1px solid var(--success);
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            display: inline-block;
+            width: 100%;
+        }
+        .btn-lunasi:hover { background-color: var(--success); color: white; }
+
         .button-row {
             display: flex;
             flex-direction: column; 
@@ -595,6 +623,9 @@
             <label for="hargaPaket">Harga Paket (Rp)</label>
             <input type="number" id="hargaPaket" value="0">
 
+            <label for="inputDP">Uang Muka / DP (Rp) - <i style="color:#888;">Opsional</i></label>
+            <input type="number" id="inputDP" value="0" placeholder="Biarkan 0 jika tidak ada DP">
+
             <button onclick="mulaiRental()">Catat Sewa 🚀</button>
         </div>
 
@@ -941,6 +972,10 @@
         const inputAkhir = document.getElementById('waktuAkhir').value;
         const paketStr = document.getElementById('paket').options[document.getElementById('paket').selectedIndex].text;
         const paketValue = document.getElementById('paket').value;
+        
+        const inputDPValue = document.getElementById('inputDP').value;
+        let uangDP = parseInt(inputDPValue);
+        if(isNaN(uangDP) || uangDP < 0) uangDP = 0;
 
         if (!dropdownUnit || !dropdownUnit.value || dropdownUnit.options[dropdownUnit.selectedIndex].disabled) { alert('Semua unit PS sedang disewa!'); return; }
         const unit = dropdownUnit.value;
@@ -949,13 +984,26 @@
         const dataPenyewa = daftarPelanggan.find(p => p.nama === namaPelangganTerpilih);
         if(!dataPenyewa) return;
 
-        const dataBaru = { id: Date.now(), nama: dataPenyewa.nama, nohp: dataPenyewa.nohp, jaminan: dataPenyewa.jaminan, unit: unit, paket: paketStr, paketValue: paketValue, hargaPaket: parseInt(harga), waktuMulai: inputMulai, waktuAkhir: inputAkhir };
+        const dataBaru = { 
+            id: Date.now(), 
+            nama: dataPenyewa.nama, 
+            nohp: dataPenyewa.nohp, 
+            jaminan: dataPenyewa.jaminan, 
+            unit: unit, 
+            paket: paketStr, 
+            paketValue: paketValue, 
+            hargaPaket: parseInt(harga), 
+            uangDP: uangDP,
+            waktuMulai: inputMulai, 
+            waktuAkhir: inputAkhir 
+        };
         daftarMain.push(dataBaru);
         simpanDanTampilkan();
         
         document.getElementById('inputPencarianPelanggan').value = '';
         namaPelangganTerpilih = "";
         document.getElementById('paket').value = '12'; 
+        document.getElementById('inputDP').value = '0';
         const now = new Date();
         document.getElementById('waktuMulai').value = formatDateTimeLocal(now);
         perbaruiOtomatis();
@@ -1000,21 +1048,31 @@
         }
     }
 
-    // UPDATE: FUNGSI SELESAI RENTAL DAN CETAK STRUK THERMAL
     function selesaiRental(id) {
         const index = daftarMain.findIndex(item => item.id === id);
         if (index === -1) return;
 
         const data = daftarMain[index];
         const tagihan = parseInt(data.hargaPaket);
+        const dp = data.uangDP || 0;
+        const sisaTagihan = tagihan - dp;
 
-        let inputBayar = prompt(`TAGIHAN: Rp ${tagihan.toLocaleString('id-ID')}\n\nMasukkan Uang Tunai dari Pelanggan untuk Mencetak Nota:`, tagihan);
+        let pesanPrompt = `TAGIHAN TOTAL: Rp ${tagihan.toLocaleString('id-ID')}`;
+        if (dp > 0) {
+            pesanPrompt += `\nSUDAH DP: Rp ${dp.toLocaleString('id-ID')}`;
+            pesanPrompt += `\nSISA TAGIHAN: Rp ${sisaTagihan.toLocaleString('id-ID')}`;
+        }
+        pesanPrompt += `\n\nMasukkan Uang Tunai Pelunasan dari Pelanggan:`;
+
+        let defaultBayar = sisaTagihan > 0 ? sisaTagihan : 0;
+        let inputBayar = prompt(pesanPrompt, defaultBayar);
         if (inputBayar === null) return; 
 
-        let uangBayar = parseInt(inputBayar.replace(/\D/g, '')); 
-        if (isNaN(uangBayar)) uangBayar = tagihan; 
+        let uangPelunasan = parseInt(inputBayar.replace(/\D/g, '')); 
+        if (isNaN(uangPelunasan)) uangPelunasan = defaultBayar; 
 
-        let uangKembali = uangBayar - tagihan;
+        let uangBayarTotal = dp + uangPelunasan;
+        let uangKembali = uangBayarTotal - tagihan;
         let isDiskon = false; 
         
         let labelKembali = "Kembali";
@@ -1036,7 +1094,7 @@
         }
 
         const dataRiwayat = {
-            idTransaksi: data.id,
+            idTransaksi: data.id, 
             tanggalSelesai: new Date().toISOString(), 
             nama: data.nama,
             unit: data.unit,
@@ -1045,7 +1103,9 @@
             waktuMulai: data.waktuMulai,
             waktuAkhir: data.waktuAkhir,
             totalHarga: data.hargaPaket,
-            uangDibayar: uangBayar,
+            uangDibayar: uangBayarTotal, 
+            uangDP: dp,                  
+            uangPelunasan: uangPelunasan,
             uangKembalian: uangKembali,
             isDiskon: isDiskon 
         };
@@ -1056,15 +1116,96 @@
         simpanDanTampilkan();
         perbaruiOtomatis(); 
 
-        // === PROSES BUILD HTML UNTUK PRINTER THERMAL ===
+        let infoLengkap = ``;
+        if(dp > 0) infoLengkap += `\nUang Muka (DP): Rp ${dp.toLocaleString('id-ID')}`;
+        infoLengkap += `\nBayar Pelunasan: Rp ${uangPelunasan.toLocaleString('id-ID')}`;
+        if (uangKembali > 0) {
+            infoLengkap += `\nKEMBALIAN: Rp ${uangKembali.toLocaleString('id-ID')}`;
+        } else if (uangKembali < 0) {
+             if(isDiskon) infoLengkap += `\nDISKON: Rp ${Math.abs(uangKembali).toLocaleString('id-ID')} ✅`;
+             else infoLengkap += `\nKURANG: Rp ${Math.abs(uangKembali).toLocaleString('id-ID')} ❌`;
+        } else {
+            infoLengkap += `\nKEMBALIAN: Uang Pas`;
+        }
+
+        alert(`STRUK SEWA PS\n\nNama: ${data.nama}\n\nTagihan Total: Rp ${tagihan.toLocaleString('id-ID')}${infoLengkap}\n\n*JANGAN LUPA KEMBALIKAN BARANG JAMINAN*`);
+
+        cetakStrukThermal(dataRiwayat, false);
+    }
+
+    function lunasiKasbon(idTrx) {
+        const index = riwayatTransaksi.findIndex(item => item.idTransaksi === idTrx);
+        if (index === -1) {
+            alert("Data transaksi tidak ditemukan!");
+            return;
+        }
+
+        const data = riwayatTransaksi[index];
+        const sisaBon = Math.abs(data.uangKembalian);
+
+        let inputBayar = prompt(`PELUNASAN KASBON / HUTANG\nNama: ${data.nama}\nSisa Bon: Rp ${sisaBon.toLocaleString('id-ID')}\n\nMasukkan jumlah yang dibayar sekarang:`, sisaBon);
+        if (inputBayar === null) return; 
+
+        let bayarSekarang = parseInt(inputBayar.replace(/\D/g, ''));
+        if (isNaN(bayarSekarang) || bayarSekarang <= 0) return;
+
+        if (data.uangPelunasan !== undefined) {
+            data.uangPelunasan += bayarSekarang;
+        } else {
+            data.uangPelunasan = (data.uangDibayar || 0) + bayarSekarang;
+        }
+        
+        data.uangDibayar += bayarSekarang; 
+        data.uangKembalian += bayarSekarang; 
+
+        localStorage.setItem('riwayatRentalSewa', JSON.stringify(riwayatTransaksi));
+        tampilkanRiwayat();
+
+        alert(`Berhasil! Pembayaran kasbon atas nama ${data.nama} sebesar Rp ${bayarSekarang.toLocaleString('id-ID')} telah dicatat.`);
+    }
+
+    function cetakUlangStruk(idTrx) {
+        const data = riwayatTransaksi.find(item => item.idTransaksi === idTrx);
+        if (!data) { alert("Data transaksi tidak ditemukan!"); return; }
+        cetakStrukThermal(data, true);
+    }
+
+    function cetakStrukThermal(data, isReprint = false) {
+        const tagihan = data.totalHarga || 0;
+        const dp = data.uangDP || 0;
+        const uangPelunasan = data.uangPelunasan !== undefined ? data.uangPelunasan : (data.uangDibayar || tagihan);
+        const uangKembali = data.uangKembalian || 0;
+        const isDiskon = data.isDiskon || false;
+
+        let labelKembali = "Kembali";
+        let nominalKembali = uangKembali;
+
+        if (uangKembali < 0) {
+            if (isDiskon) { labelKembali = "Diskon"; nominalKembali = Math.abs(uangKembali); } 
+            else { labelKembali = "Kasbon"; nominalKembali = Math.abs(uangKembali); }
+        } else if (uangKembali === 0) {
+            nominalKembali = 0;
+        }
+
         const tglPrint = new Date().toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'});
         const formatMulai = new Date(data.waktuMulai).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
         const formatAkhir = new Date(data.waktuAkhir).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
 
+        let htmlDP = '';
+        if (dp > 0) {
+            htmlDP = `
+            <div class="print-row">
+                <span>Uang Muka (DP)</span>
+                <span>Rp ${dp.toLocaleString('id-ID')}</span>
+            </div>`;
+        }
+
+        let labelTitle = isReprint ? `${tglPrint} <br>(REPRINT)` : `${tglPrint}`;
+
         const printHTML = `
             <div style="text-align: center; margin-bottom: 10px;">
                 <h3 style="margin: 0; font-size: 18px;">SIMON PLAYSTATION</h3>
-                <div style="font-size: 12px; margin-top: 2px;">${tglPrint}</div>
+                <div style="font-size: 12px; margin-top: 2px;">${labelTitle}</div>
             </div>
             
             <div class="print-divider"></div>
@@ -1085,12 +1226,13 @@
             <div class="print-divider"></div>
             
             <div class="print-row">
-                <span>Tagihan</span>
+                <span>Tagihan Total</span>
                 <span>Rp ${tagihan.toLocaleString('id-ID')}</span>
             </div>
+            ${htmlDP}
             <div class="print-row">
-                <span>Bayar</span>
-                <span>Rp ${uangBayar.toLocaleString('id-ID')}</span>
+                <span>Total Pelunasan</span>
+                <span>Rp ${uangPelunasan.toLocaleString('id-ID')}</span>
             </div>
             <div class="print-row" style="font-weight: bold;">
                 <span>${labelKembali}</span>
@@ -1107,8 +1249,6 @@
         `;
 
         document.getElementById('printArea').innerHTML = printHTML;
-        
-        // Panggil print dialog browser (akan ditangkap oleh RawBT)
         window.print();
     }
 
@@ -1139,6 +1279,11 @@
                 styleTambahan = 'border: 2px solid var(--danger);'; 
             }
 
+            let infoDP = '';
+            if (item.uangDP && item.uangDP > 0) {
+                infoDP = ` | <span style="color:#64b5f6">DP: Rp ${item.uangDP.toLocaleString('id-ID')}</span>`;
+            }
+
             wadah.innerHTML += `
                 <div class="rental-card" style="${styleTambahan}">
                     <div class="rental-info">
@@ -1156,7 +1301,7 @@
                         </div>
                         <div style="margin-top: 5px;">Akhir : <b class="highlight">${formatSelesai}</b></div>
                         <div style="margin-top: 8px; border-top: 1px solid #444; padding-top: 8px; font-weight: bold; color: var(--success); font-size: 14px;">
-                            Total Tagihan: Rp ${item.hargaPaket.toLocaleString('id-ID')}
+                            Tagihan: Rp ${item.hargaPaket.toLocaleString('id-ID')} ${infoDP}
                         </div>
                     </div>
                     <button class="btn-stop" onclick="selesaiRental(${item.id})">Cetak Struk Selesai 🛑</button>
@@ -1166,7 +1311,6 @@
         });
     }
 
-    // MODAL SETORAN & RIWAYAT
     function setorUang(saldoMaksimal) {
         document.getElementById('maxSetorValue').value = saldoMaksimal;
         document.getElementById('textMaxSetor').innerText = saldoMaksimal.toLocaleString('id-ID');
@@ -1236,6 +1380,9 @@
                 const diskon = t.isDiskon || false; 
                 const namaPaket = t.paket || "Paket Custom";
                 
+                const dpVal = t.uangDP || 0;
+                const pelunasanVal = t.uangPelunasan !== undefined ? t.uangPelunasan : uangBayar;
+
                 totalTagihanAsli += tagihanPaket;
 
                 if (kembalian < 0) {
@@ -1250,17 +1397,60 @@
                     if (diskon) statusKembalianText = `<span class="text-diskon">Disc: Rp ${Math.abs(kembalian).toLocaleString('id-ID')}</span>`;
                     else statusKembalianText = `<span style="color: var(--danger)">Bon: Rp ${Math.abs(kembalian).toLocaleString('id-ID')}</span>`;
                 } else if (kembalian === 0) statusKembalianText = `<span style="color: #aaa;">Uang Pas</span>`;
+                else statusKembalianText = `<span style="color: #ccc;">Kembali: Rp ${kembalian.toLocaleString('id-ID')}</span>`;
 
-                tbody.innerHTML += `<tr><td><span style="font-size:10px; color:#aaa;">${tglSelesai.replace(', ', '<br>')}</span></td><td><b style="font-size:13px;">${t.nama}</b><br><span style="font-size: 10px; color: #888;">${t.unit}</span><br><span class="riwayat-detail-paket">${namaPaket}</span><br><div class="riwayat-detail-waktu">🕒 ${jamMulai} - ${jamAkhir} (${tglAkhir})</div></td><td><strong style="color: white; font-size:13px;">Rp ${tagihanPaket.toLocaleString('id-ID')}</strong><div class="keuangan-info"><span>In: Rp ${uangBayar.toLocaleString('id-ID')}</span><br><span>${statusKembalianText}</span></div></td></tr>`;
+                let infoUangText = '';
+                if (dpVal > 0) {
+                    infoUangText = `
+                        <span style="color:#64b5f6">DP: Rp ${dpVal.toLocaleString('id-ID')}</span><br>
+                        <span>Lunas: Rp ${pelunasanVal.toLocaleString('id-ID')}</span><br>
+                    `;
+                } else {
+                    infoUangText = `<span>In: Rp ${pelunasanVal.toLocaleString('id-ID')}</span><br>`;
+                }
+
+                let actionBtns = `<button class="btn-reprint" onclick="cetakUlangStruk(${t.idTransaksi || 0})">🖨️ Reprint Struk</button>`;
+                if (kembalian < 0 && !diskon) {
+                    actionBtns += `<button class="btn-lunasi" onclick="lunasiKasbon(${t.idTransaksi || 0})">💵 Lunasi Kasbon</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <span style="font-size:10px; color:#aaa;">${tglSelesai.replace(', ', '<br>')}</span>
+                        </td>
+                        <td>
+                            <b style="font-size:13px;">${t.nama}</b><br>
+                            <span style="font-size: 10px; color: #888;">${t.unit}</span><br>
+                            <span class="riwayat-detail-paket">${namaPaket}</span><br>
+                            <div class="riwayat-detail-waktu">🕒 ${jamMulai} - ${jamAkhir} (${tglAkhir})</div>
+                        </td>
+                        <td>
+                            <strong style="color: white; font-size:13px;">Rp ${tagihanPaket.toLocaleString('id-ID')}</strong>
+                            <div class="keuangan-info">
+                                ${infoUangText}
+                                <span>${statusKembalianText}</span>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:5px; margin-top:8px;">
+                                ${actionBtns}
+                            </div>
+                        </td>
+                    </tr>
+                `;
             });
         }
 
         riwayatSetoran.forEach(s => { totalSeluruhSetoran += s.nominal; });
         let saldoLaci = totalUangMasukReal - totalSeluruhSetoran;
 
-        let rincianHTML = `<div class="summary-box"><div class="summary-row tagihan"><span>Omzet Tagihan:</span><span>Rp ${totalTagihanAsli.toLocaleString('id-ID')}</span></div>`;
+        let rincianHTML = `<div class="summary-box">
+            <div class="summary-row tagihan"><span>Omzet Tagihan:</span><span>Rp ${totalTagihanAsli.toLocaleString('id-ID')}</span></div>`;
         if (totalPiutangKasbon > 0) rincianHTML += `<div class="summary-row piutang"><span>Piutang (Kasbon):</span><span>- Rp ${totalPiutangKasbon.toLocaleString('id-ID')}</span></div>`;
         if (totalDiskon > 0) rincianHTML += `<div class="summary-row diskon"><span>Diskon Diberikan:</span><span>- Rp ${totalDiskon.toLocaleString('id-ID')}</span></div>`;
+        
+        // BARIS BARU: TOTAL UANG FISIK 
+        rincianHTML += `<div class="summary-row" style="color: var(--success); margin-top: 8px; border-top: 1px dashed #444; padding-top: 8px;"><span>Total Uang Fisik (Laci + Setor):</span><span>Rp ${totalUangMasukReal.toLocaleString('id-ID')}</span></div>`;
+
         if (totalSeluruhSetoran > 0) rincianHTML += `<div class="summary-row setoran"><span>Total Sudah Disetor:</span><span>- Rp ${totalSeluruhSetoran.toLocaleString('id-ID')}</span></div>`;
 
         rincianHTML += `<div class="summary-row real" style="display:flex; justify-content:space-between; align-items:center;"><div>Sisa Uang Laci:</div><div style="text-align:right;"><div>Rp ${saldoLaci.toLocaleString('id-ID')}</div><button class="btn-riwayat-setor" onclick="bukaModalDaftarSetoran()">Riwayat Setoran</button> <button class="btn-setor" onclick="setorUang(${saldoLaci})">Setor Uang 🏧</button></div></div></div>`;
